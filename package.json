@@ -1,0 +1,24 @@
+{
+  "name": "gitdb",
+  "version": "1.0.0",
+  "description": "Github based database that will fully work in browser and node",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Harendra Chhekur<820121223505e@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "ts-loader": "^6.0.4",
+    "typescript": "^3.5.3",
+    "webpack": "^4.38.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Chhekur/gitdb"
+  },
+  "homepage": "https://chhekur.github.io/gitdb"
+}
