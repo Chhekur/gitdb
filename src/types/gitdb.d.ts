@@ -3,7 +3,7 @@ declare namespace NodeJS {
         gitdb: {
             connection: any;
             repository: any;
-            branch: String;
+            branch: any;
         }
     }
 }

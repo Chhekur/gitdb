@@ -1,5 +1,8 @@
 import utils = require("../utils/utils");
+import { rejects } from "assert";
 class gitdb{
+
+    private details: Object;
 
     constructor(){
         global.gitdb = {
@@ -7,6 +10,7 @@ class gitdb{
             repository: null,
             branch: null
         }
+        this.details = null;
     }
 
     public connect(details:Object){
@@ -16,20 +20,42 @@ class gitdb{
         if(details['repository'] == undefined || details['branch'] == undefined){
             throw ("object with following attributes is required\n1. Token\n2. Repository\n3. Branch");
         }
-        if(global.gitdb.connection == null){
+        this.details = details;
+    }
+
+    private establishConnection(){
+        if(this.details == null){
+            throw ("make the connection first");
+        }
+        else if(global.gitdb.connection == null){
             return new Promise(function(resolve, reject){
                 try{
-                    global.gitdb.connection = utils.auth(details);
+                    global.gitdb.connection = utils.auth(this.details);
                     // console.log(global);
                     resolve();
                 }catch(error){
                     reject(error);
                 }
-            })
+            }.bind(this))
             .then(function(){
-                this.setRepository(details['username'], details['repository'])
-                .then(this.setBranch(details['branch']))
-                .catch(function(error) { throw error; })
+                return new Promise(function(resolve, reject){
+                    this.setRepository(this.details['username'], this.details['repository'])
+                    .then(function(){
+                        this.setBranch()
+                        .then(function(){
+                            resolve();
+                        })
+                        .catch(function(error){
+                            reject(error);
+                        })
+                    }.bind(this))
+                    .catch(function(error){
+                        reject(error)
+                    })
+                }.bind(this))
+                .catch(function(error){
+                    throw error;
+                })
             }.bind(this))
             .catch(function(error){
                 console.error(error);
@@ -37,31 +63,19 @@ class gitdb{
         }
     }
 
-    private setBranch(branchname){
-        if(global.gitdb.repository == null){
-            throw ("make the connection first");
-        }
-        return global.gitdb.repository.listBranches()
-        .then(function(branches){
-            // console.log(branches);
-            let exist = branches.data.find(branch => branchname === branch.name);
-            if(!exist){
-                // console.log('not exist');
-                return global.gitdb.repository.createBranch('master', branchname)
-                .then(function(){
-                    global.gitdb.branch = branchname;
-                })
-                .catch(function(error){
-                    console.error(error);
-                })
-            }else{
-                // console.log('exist');
-                global.gitdb.branch = branchname;
-            }
-        })
+    private setBranch(){
+        return new Promise(function(resolve, reject){
+            utils.setBranch(this.details['branch'])
+            .then(function(){
+                resolve();
+            })
+            .catch(function(error){
+                reject(error);
+            })
+        }.bind(this))
         .catch(function(error){
-            console.error(error);
-        });
+            throw error;
+        })
     }
 
     private setRepository(username, repository){
@@ -73,6 +87,39 @@ class gitdb{
                 reject(error);
             }
         });
+    }
+
+    public testCommitSHA(){
+        if(global.gitdb.connection == null){
+            this.establishConnection()
+            .then(function(){
+                console.log(global.gitdb);
+                utils.getCurrentCommitSHA(function(ref){
+                    console.log(ref);
+                    utils.getTreeSHA(ref, function(treesha){
+                        console.log(treesha);
+                    }).catch(function(error){
+                        throw error;
+                    })
+                }).catch(function(error){
+                    throw error;
+                })
+            })
+            .catch(function(error){
+                console.error(error);
+            })
+        }else{
+            utils.getCurrentCommitSHA(function(ref){
+                console.log(ref);
+                utils.getTreeSHA(ref, function(treesha){
+                    console.log(treesha);
+                }).catch(function(error){
+                    throw error;
+                })
+            }).catch(function(error){
+                console.error(error);
+            })
+        }
     }
 }
 
