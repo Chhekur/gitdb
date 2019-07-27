@@ -12,6 +12,7 @@
   "author": "Harendra Chhekur<820121223505e@gmail.com>",
   "license": "MIT",
   "dependencies": {
+    "@types/node": "^12.6.8",
     "ts-loader": "^6.0.4",
     "typescript": "^3.5.3",
     "webpack": "^4.38.0"

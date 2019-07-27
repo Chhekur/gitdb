@@ -2,11 +2,28 @@ const path = require("path");
 const webpack_rules = [];
 const webpackOption = [{
     entry: "./src/gitdb/gitdb.ts",
+    target:"web",
     output: {
         path: path.resolve(__dirname, "build"),
         filename: "gitdb.js",
         library: "gitdb",
         libraryTarget: "var"
+    },
+    module: {
+        rules: webpack_rules
+    },
+    resolve: {
+        extensions: [".tsx", ".ts", ".js"]
+    }
+},
+{
+    entry: "./src/gitdb/gitdb.ts",
+    target:"node",
+    output: {
+        path: path.resolve(__dirname, "build"),
+        filename: "gitdb.node.js",
+        library: "gitdb",
+        libraryTarget: "commonjs2"
     },
     module: {
         rules: webpack_rules

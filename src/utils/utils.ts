@@ -7,9 +7,11 @@ class utils{
         return new GitHub(details);
     }
 
-    public getRepository(userName: String, repository: String, gh){
-        return gh.getRepo(userName, repository);
+    public getRepository(username: String, repository: String, gitdb_connection:any){
+        if(gitdb_connection == null) throw ("make the connection first");
+        return gitdb_connection.getRepo(username, repository);
     }
+
 }
 
 export = new utils();
