@@ -57,6 +57,15 @@ class utils{
         })
     }
 
+    public readTree(sha, callback){
+        return global.gitdb.repository.getTree(sha)
+        .then(function(res){
+            callback(res);
+        }).catch(function(error){
+            throw error;
+        })
+    }
+
     public establishConnection(){
         if(global.gitdb.details == null){
             throw ("make the connection first");
@@ -106,6 +115,66 @@ class utils{
                 reject(error);
             }
         }.bind(this));
+    }
+
+    public createFile(fileInfo){
+        return new Promise(function(resolve, reject){
+            global.gitdb.repository.createBlob(fileInfo.content)
+            .then(function(blob){
+                resolve(blob);
+            })
+            .catch(function(error){
+                reject(error);
+            });
+        }.bind(this));
+    }
+
+    public createTree(files: Array<any>){
+        return new Promise(function(resolve, reject){
+            this.getCurrentCommitSHA(function(ref){
+                this.getTreeSHA(ref, function(treeSHA){
+                    global.gitdb.repository.createTree(files, treeSHA)
+                    .then(function(tree){
+                        resolve(tree);
+                    })
+                    .catch(function(error){
+                        reject(error);
+                    })
+                }).catch(function(error){
+                    reject(error);
+                });
+            }.bind(this)).catch(function(error){
+                reject(error);
+            });
+        }.bind(this));
+    }
+
+    public commit(treeSHA:any, message: String){
+        return new Promise(function(resolve, reject){
+            this.getCurrentCommitSHA(function(ref){
+                global.gitdb.repository.commit(ref, treeSHA, message)
+                .then(function(commit){
+                    resolve(commit);
+                })
+                .catch(function(error){
+                    reject(error);
+                })
+            }).catch(function(error){
+                reject(error);
+            });
+        }.bind(this));
+    }
+
+    public updateHead(commitSHA: any){
+        return new Promise(function(resolve, reject){
+            global.gitdb.repository.updateHead(`heads/${global.gitdb.branch}`, commitSHA)
+            .then(function(){
+                resolve();
+            })
+            .catch(function(error){
+                reject(error);
+            });
+        });
     }
 }
 

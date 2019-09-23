@@ -1,5 +1,5 @@
 import utils = require("../utils/utils");
-import { rejects } from "assert";
+import {model} from "./model";
 class gitdb {
 
     private details: Object;
@@ -62,6 +62,17 @@ class gitdb {
                     console.log(ref);
                     utils.getTreeSHA(ref, function(treesha){
                         console.log(treesha);
+                        global.gitdb.repository.getContents(ref, "test1.json", true)
+                        .then(function(data){
+                            console.log("content : ", data);
+                        })
+                        .catch(function(error){
+                            console.log(error);
+                            console.log(error.toString().split(" ")[1]);
+                            if(error.toString().split(' ')[1] == "404"){
+                                console.log('creating..');
+                            }
+                        })
                     }).catch(function(error){
                         throw error;
                     })
@@ -84,6 +95,10 @@ class gitdb {
                 console.error(error);
             })
         }
+    }
+
+    public model(name: String, schema: Object){
+        return new model(name, schema);
     }
 }
 
