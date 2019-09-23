@@ -7,7 +7,7 @@
     "test": "test"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "webpack --mode development"
   },
   "author": "Harendra Chhekur<820121223505e@gmail.com>",
   "license": "MIT",
@@ -21,5 +21,8 @@
     "type": "git",
     "url": "https://github.com/Chhekur/gitdb"
   },
-  "homepage": "https://chhekur.github.io/gitdb"
+  "homepage": "https://chhekur.github.io/gitdb",
+  "devDependencies": {
+    "webpack-cli": "^3.3.9"
+  }
 }

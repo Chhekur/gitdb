@@ -56,6 +56,57 @@ class utils{
             throw error;
         })
     }
+
+    public establishConnection(){
+        if(global.gitdb.details == null){
+            throw ("make the connection first");
+        }
+        else if(global.gitdb.connection == null){
+            return new Promise(function(resolve, reject){
+                try{
+                    global.gitdb.connection = this.auth(global.gitdb.details);
+                    // console.log(global);
+                    resolve();
+                }catch(error){
+                    reject(error);
+                }
+            }.bind(this))
+            .then(function(){
+                return new Promise(function(resolve, reject){
+                    this.setRepository(global.gitdb.details['username'], global.gitdb.details['repository'])
+                    .then(function(){
+                        this.setBranch(global.gitdb.details['branch'])
+                        .then(function(){
+                            resolve();
+                        })
+                        .catch(function(error){
+                            reject(error);
+                        })
+                    }.bind(this))
+                    .catch(function(error){
+                        reject(error)
+                    })
+                }.bind(this))
+                .catch(function(error){
+                    throw error;
+                })
+            }.bind(this))
+            .catch(function(error){
+                console.error(error);
+            });
+        }
+    }
+
+    private setRepository(username, repository){
+        return new Promise(function(resolve, reject){
+            try{
+                global.gitdb.repository = this.getRepository(username, repository, global.gitdb.connection);
+                resolve();
+            }catch(error){
+                reject(error);
+            }
+        }.bind(this));
+    }
 }
 
 export = new utils();

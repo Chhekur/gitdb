@@ -4,6 +4,7 @@ declare namespace NodeJS {
             connection: any;
             repository: any;
             branch: any;
+            details: any;
         }
     }
 }
