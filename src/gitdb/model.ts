@@ -16,13 +16,14 @@ export class model {
     }
 
     public insert(data: Object){
-        if(this.schema == undefined) return;
-        let serializedData = this.serialize(data);
-        if(global.gitdb.connection == null){
-            return new Promise(function(resolve, reject){
+
+        return new Promise(function(resolve, reject){
+            if(this.schema == undefined) reject();
+            let serializedData = this.serialize(data);
+            if(global.gitdb.connection == null){
                 utils.establishConnection()
                 .then(function(){
-                    utils.createFile(serializedData, `${this.name}/${serializedData[parser.getPrimaryKey(this.schema)]}`, `inserting data into ${this.name} model`)
+                    this.insertHelper(serializedData)
                     .then(function(res){
                         resolve(res);
                     })
@@ -33,8 +34,103 @@ export class model {
                 .catch(function(error){
                     reject(error);
                 })
-            }.bind(this));
-        }
+            }else{
+                this.insertHelper(serializedData)
+                .then(function(res){
+                    resolve(res);
+                })
+                .catch(function(error){
+                    reject(error);
+                })
+            }
+        }.bind(this));
+    }
+
+    private insertHelper(data){
+        return new Promise(function(resolve, reject){
+            utils.createFile(data, `${this.name}/${data[parser.getPrimaryKey(this.schema)]}`, `inserting data into ${this.name} model`)
+            .then(function(res){
+                resolve(res);
+            })
+            .catch(function(error){
+                reject(error);
+            })
+        }.bind(this));
+    }
+
+    public find(pattern: Object){
+
+        return new Promise(function(resolve, reject){
+            if(this.schema == undefined) reject();
+            // console.log('Hello', JSON.stringify(pattern) == "{}");
+            let serializedData = this.serialize(pattern);
+            if(global.gitdb.connection == null){
+                utils.establishConnection()
+                .then(function(){
+                    this.findHelper(serializedData)
+                    .then(function(res){
+                        resolve(res);
+                    })
+                    .catch(function(error){
+                        reject(error);
+                    })
+                }.bind(this))
+                .catch(function(error){
+                    reject(error);
+                })
+            }else{
+                this.findHelper(serializedData)
+                .then(function(res){
+                    resolve(res);
+                })
+                .catch(function(error){
+                    reject(error);
+                })
+            }
+        }.bind(this));
+    }
+
+    private findHelper(pattern: Object){
+        return new Promise(function(resolve, reject){
+            let primaryKey = parser.getPrimaryKey(this.schema);
+            if(primaryKey in pattern){
+                utils.getFile(`${this.name}/${pattern[primaryKey]}`)
+                .then(function(content){
+                    resolve(content);
+                })
+                .catch(function(error){
+                    if(error.toString().split(' ')[1] == "404"){
+                        resolve({});
+                    }else reject(error);
+                })
+            }else{
+                // console.log("primary key not found");
+                global.gitdb.repository.getContents(global.gitdb.branch, `${this.name}`, true)
+                .then(function(res){
+                    let results = [];
+                    res.data.forEach(function(element) {
+                        utils.getBlob(element.sha)
+                        .then(function(blob){
+                            let flag: Boolean = true;
+                            for(let pat in pattern){
+                                if(JSON.stringify(blob['data'][pat]) != JSON.stringify(pattern[pat])){
+                                    flag = false;
+                                    // console.log(blob['data'][pat], pattern[pat]);
+                                }
+                            }
+                            if(flag) results.push(blob['data']);
+                        })
+                        .catch(function(error){
+                            reject(error);
+                        })
+                    });
+                    resolve(results);
+                })
+                .catch(function(error){
+                    reject(error);
+                })
+            }
+        }.bind(this));
     }
 
     private serialize (data: Object){

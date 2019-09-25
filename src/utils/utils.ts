@@ -57,7 +57,7 @@ class utils{
         })
     }
 
-    public readTree(sha, callback){
+    public getTree(sha, callback){
         return global.gitdb.repository.getTree(sha)
         .then(function(res){
             callback(res);
@@ -188,6 +188,36 @@ class utils{
                 reject(error);
             });
         });
+    }
+
+    public getBlob(sha){
+        return new Promise(function(resolve, reject){
+            global.gitdb.repository.getBlob(sha)
+            .then(function(blob){
+                resolve(blob);
+            })
+            .catch(function(error){
+                reject(error);
+            })
+        })
+    }
+
+    public getFile(path){
+        return new Promise(function(resolve, reject){
+            global.gitdb.repository.getSha(global.gitdb.branch, path)
+            .then(function(sha){
+                this.getBlob(sha.data.sha)
+                .then(function(blob){
+                    resolve(blob.data);
+                })
+                .catch(function(error){
+                    reject(error);
+                })
+            }.bind(this))
+            .catch(function(error){
+                reject(error);
+            })
+        }.bind(this));
     }
 }
 
