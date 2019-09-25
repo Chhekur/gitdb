@@ -21,16 +21,21 @@ class parser {
                     console.log(model[attr], attr);
                     throw(`Syntax error ^ ${attr} : ${JSON.stringify(model[attr])}`);
                 }
-            }else{
+            }else if(model[attr] == ""){
+                model[attr] = definations.default;
+            }
+            else {
                 throw(`Syntax error ^ ${attr} : ${JSON.stringify(model[attr])}`);
             }
         }
+        return model;
     }
 
     public validate(model){
-        this.verifyAttributes(model);
+        let verifiedModel = this.verifyAttributes(model);
         // console.log(this.hasPrimary(model));
-        if(!this.hasPrimary(model)) throw (`Primary key not found ^ ${JSON.stringify(model)}`);
+        if(!this.hasPrimary(verifiedModel)) throw (`Primary key not found ^ ${JSON.stringify(model)}`);
+        return verifiedModel;
     }
 
     public getPrimaryKey(model){

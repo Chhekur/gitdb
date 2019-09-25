@@ -8,8 +8,7 @@ export class model {
     constructor(name : String, schema: Object){
         try{
             this.name = name;
-            parser.validate(schema);
-            this.schema = schema;
+            this.schema = parser.validate(schema);
         }catch(error){
             console.error(error);
         }
@@ -50,7 +49,7 @@ export class model {
         return new Promise(function(resolve, reject){
             utils.createFile(data, `${this.name}/${data[parser.getPrimaryKey(this.schema)]}`, `inserting data into ${this.name} model`)
             .then(function(res){
-                resolve(res);
+                resolve(data);
             })
             .catch(function(error){
                 reject(error);
