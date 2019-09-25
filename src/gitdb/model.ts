@@ -96,11 +96,11 @@ export class model {
             if(primaryKey in pattern){
                 utils.getFile(`${this.name}/${pattern[primaryKey]}`)
                 .then(function(content){
-                    resolve(content);
+                    resolve([content]);
                 })
                 .catch(function(error){
                     if(error.toString().split(' ')[1] == "404"){
-                        resolve({});
+                        resolve([{}]);
                     }else reject(error);
                 })
             }else{
@@ -127,7 +127,9 @@ export class model {
                     resolve(results);
                 })
                 .catch(function(error){
-                    reject(error);
+                    if(error.toString().split(' ')[1] == "404"){
+                        resolve([{}]);
+                    }else reject(error);
                 })
             }
         }.bind(this));
