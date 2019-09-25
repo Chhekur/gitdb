@@ -117,11 +117,24 @@ class utils{
         }.bind(this));
     }
 
-    public createFile(fileInfo){
+    public createBlob(fileInfo){
         return new Promise(function(resolve, reject){
             global.gitdb.repository.createBlob(fileInfo.content)
             .then(function(blob){
                 resolve(blob);
+            })
+            .catch(function(error){
+                reject(error);
+            });
+        }.bind(this));
+    }
+
+    public createFile(content, filepath, message){
+        return new Promise(function(resolve, reject){
+            // console.log(content);
+            global.gitdb.repository.writeFile(global.gitdb.branch, filepath, JSON.stringify(content), message, {})
+            .then(function(commit){
+                resolve(commit);
             })
             .catch(function(error){
                 reject(error);

@@ -1,54 +1,73 @@
 import utils = require('../utils/utils');
+import parser = require('../parser/parser');
 
 export class model {
     private schema : Object;
     private name : String;
 
     constructor(name : String, schema: Object){
-        this.name = name;
-        this.schema = schema;
+        try{
+            this.name = name;
+            parser.validate(schema);
+            this.schema = schema;
+        }catch(error){
+            console.error(error);
+        }
     }
 
-    public insert(object: Object){
-        // let verifiedData = this.verifyData(object);
-        return new Promise(function(resolve, reject){
-            this.isExist()
-            .then(function(){
-                resolve();
-            })
-            .catch(function(error){
-                reject(error);
-            })
-        }.bind(this));
+    public insert(data: Object){
+        if(this.schema == undefined) return;
+        let serializedData = this.serialize(data);
+        if(global.gitdb.connection == null){
+            return new Promise(function(resolve, reject){
+                utils.establishConnection()
+                .then(function(){
+                    utils.createFile(serializedData, `${this.name}/${serializedData[parser.getPrimaryKey(this.schema)]}`, `inserting data into ${this.name} model`)
+                    .then(function(res){
+                        resolve(res);
+                    })
+                    .catch(function(error){
+                        reject(error);
+                    })
+                }.bind(this))
+                .catch(function(error){
+                    reject(error);
+                })
+            }.bind(this));
+        }
     }
 
-    private verifyData(object: Object){
-        let temp: Object;
+    private serialize (data: Object){
+        let temp: Object = {};
         for (var attr in this.schema){
-            if(object[attr]){
-                temp[attr] = object[attr];
+            if(data[attr]){
+                temp[attr] = data[attr];
             }
         }
         return temp;
     }
 
+    private deserialize(){
+
+    }
+
     private isInfoExist(){
         return new Promise(function(resolve, reject){
-            global.gitdb.repository.getContents(global.gitdb.branch, "info/1.json", true)
+            global.gitdb.repository.getContents(global.gitdb.branch, "info/info", true)
             .then(function(res){
                 resolve();
             })
             .catch(function(error){
                 if(error.toString().split(' ')[1] == "404"){
-                    utils.createFile({
+                    utils.createBlob({
                         content: "{}",
-                        path: "info/1.json"
+                        path: "info/info"
                     })
                     .then(function(blob){
                         utils.createTree([
                             {
                                 sha: blob['data'].sha,
-                                path: "info/1.json",
+                                path: "info/info",
                                 mode: "100644",
                                 type: 'blob'
                             }
@@ -75,41 +94,34 @@ export class model {
                     .catch(function(error){
                         reject(error);
                     })
+                }else{
+                    reject(error);
                 }
             })
         })
     }
 
     private isExist(){
-        if(global.gitdb.connection == null){
-            return new Promise(function(resolve, reject){
-                utils.establishConnection()
-                .then(function(){
-                    utils.getCurrentCommitSHA(function(ref){
-                        utils.getTreeSHA(ref, function(treesha){
-                            console.log(treesha);
-                            // need to complete
-                            this.isInfoExist()
-                            .then(function(){
-                                console.log("file is created or already exist");
-                                resolve();
-                            })
-                            .catch(function(error){
-                                reject(error);
-                            })
-                            
-                        }.bind(this)).catch(function(error){
-                            reject(error);
-                        })
-                    }.bind(this)).catch(function(error){
+        return new Promise(function(resolve, reject){
+            utils.getCurrentCommitSHA(function(ref){
+                utils.getTreeSHA(ref, function(treesha){
+                    console.log(treesha);
+                    // need to complete
+                    this.isInfoExist()
+                    .then(function(){
+                        console.log("file is created or already exist");
+                        resolve();
+                    })
+                    .catch(function(error){
                         reject(error);
                     })
+                    
                 }.bind(this)).catch(function(error){
                     reject(error);
                 })
-            }.bind(this))
-        }else{
-
-        }
+            }.bind(this)).catch(function(error){
+                reject(error);
+            })
+        }.bind(this))
     }
 }
