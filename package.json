@@ -13,9 +13,9 @@
   "license": "MIT",
   "dependencies": {
     "@types/node": "^12.6.8",
-    "ts-loader": "^6.0.4",
+    "ts-loader": "^9.4.2",
     "typescript": "^3.5.3",
-    "webpack": "^4.38.0"
+    "webpack": "^5.75.0"
   },
   "repository": {
     "type": "git",
@@ -23,6 +23,6 @@
   },
   "homepage": "https://chhekur.github.io/gitdb",
   "devDependencies": {
-    "webpack-cli": "^3.3.9"
+    "webpack-cli": "^5.0.1"
   }
 }
